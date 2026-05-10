@@ -379,6 +379,32 @@
   /* ===== ERROR ===== */
   .err-box { background: #FCEBEB; border: 0.5px solid #F09595; border-radius: var(--radius-sm); padding: 11px 14px; font-size: 13px; color: #501313; margin-bottom: 14px; }
 
+  /* ===== API KEY SCREEN ===== */
+  .apikey-hero { text-align: center; padding: 32px 0 24px; }
+  .apikey-hero .hero-icon { font-size: 44px; margin-bottom: 12px; }
+  .apikey-hero h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .apikey-hero p  { font-size: 13px; color: var(--sub); line-height: 1.5; }
+  .apikey-box { background: var(--bg2); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 14px; }
+  .apikey-steps { list-style: none; counter-reset: steps; }
+  .apikey-steps li { counter-increment: steps; display: flex; align-items: flex-start; gap: 10px; font-size: 13px; color: var(--text); margin-bottom: 10px; line-height: 1.5; }
+  .apikey-steps li:last-child { margin-bottom: 0; }
+  .apikey-steps li::before { content: counter(steps); background: var(--text); color: var(--bg); border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
+  .apikey-link { color: var(--carb-color); text-decoration: none; font-weight: 600; }
+  .apikey-link:hover { text-decoration: underline; }
+  .apikey-input-wrap { position: relative; margin-bottom: 8px; }
+  .apikey-input {
+    width: 100%; padding: 12px 44px 12px 12px; border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border2); background: var(--bg2);
+    color: var(--text); font-size: 14px; outline: none; font-family: monospace;
+    letter-spacing: .03em;
+  }
+  .apikey-input:focus { border-color: var(--text); }
+  .apikey-toggle {
+    position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; cursor: pointer; color: var(--sub); padding: 4px;
+  }
+  .apikey-saved { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--pro-color); margin-bottom: 12px; background: #E1F5EE; padding: 8px 12px; border-radius: var(--radius-sm); }
+
   /* ===== RESPONSIVE ===== */
   @media (max-width: 360px) {
     .capture-grid { grid-template-columns: 1fr; }
@@ -390,8 +416,50 @@
 <body>
 <div class="app">
 
+<!-- ===== API KEY SETUP ===== -->
+<div id="s-apikey" class="screen">
+  <div class="apikey-hero">
+    <div class="hero-icon">🔑</div>
+    <h1>הגדרת API Key</h1>
+    <p>כדי לנתח תמונות ארוחה נדרש מפתח חינמי<br/>מ-Anthropic. פעם אחת בלבד.</p>
+  </div>
+
+  <div class="apikey-box">
+    <div class="sec-label" style="margin-bottom:10px;">איך מקבלים מפתח?</div>
+    <ol class="apikey-steps">
+      <li>היכנסי ל-<a class="apikey-link" href="https://console.anthropic.com" target="_blank">console.anthropic.com</a></li>
+      <li>הירשמי חינם עם אימייל</li>
+      <li>לחצי <strong>API Keys</strong> בתפריט ← <strong>Create Key</strong></li>
+      <li>העתיקי את המפתח והדביקי למטה</li>
+    </ol>
+  </div>
+
+  <div id="apikey-saved-banner" style="display:none;" class="apikey-saved">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="20 6 9 17 4 12"/></svg>
+    מפתח שמור — ניתן להמשיך
+  </div>
+
+  <label class="form-label">המפתח שלי (sk-ant-...)</label>
+  <div class="apikey-input-wrap">
+    <input class="apikey-input" id="apikey-input" type="password"
+      placeholder="sk-ant-api03-..." autocomplete="off" spellcheck="false"
+      oninput="onApiKeyInput()"/>
+    <button class="apikey-toggle" onclick="toggleApiKeyVisibility()" type="button" title="הצג/הסתר">
+      <svg id="eye-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+      </svg>
+    </button>
+  </div>
+  <div style="font-size:11px;color:var(--sub);margin-bottom:16px;line-height:1.5;">
+    המפתח נשמר רק במכשיר שלך ולא נשלח לשום מקום אחר.
+  </div>
+
+  <button class="btn-primary" id="apikey-save-btn" onclick="saveApiKey()" disabled style="opacity:.4;">שמרי והמשיכי ←</button>
+  <button class="btn-secondary" id="apikey-skip-btn" style="display:none;" onclick="go('login')">המשיכי (מפתח קיים)</button>
+</div>
+
 <!-- ===== LOGIN ===== -->
-<div id="s-login" class="screen on">
+<div id="s-login" class="screen">
   <div class="login-hero">
     <div class="hero-icon">🥗</div>
     <h1>מעקב תזונה</h1>
@@ -503,6 +571,7 @@
     <div class="top-actions">
       <button class="btn-icon" onclick="openGoals()">⚙ יעדים</button>
       <button class="btn-icon" onclick="go('login')">החלף</button>
+      <button class="btn-icon" onclick="go('apikey')" title="שנה API Key">🔑</button>
     </div>
   </div>
 
@@ -628,8 +697,62 @@
    Storage: localStorage
    ========================================================= */
 
-const USDA_KEY = 'DEMO_KEY'; // החלפי ב-API key אישי מ-fdc.nal.usda.gov/api-guide
+const USDA_KEY = 'DEMO_KEY';
 const ANTHROPIC_MODEL = 'claude-sonnet-4-20250514';
+
+/* ---- API Key management ---- */
+function getApiKey() {
+  return localStorage.getItem('anthropicApiKey') || '';
+}
+
+function onApiKeyInput() {
+  const val = document.getElementById('apikey-input').value.trim();
+  const btn = document.getElementById('apikey-save-btn');
+  btn.disabled = val.length < 10;
+  btn.style.opacity = val.length < 10 ? '.4' : '1';
+}
+
+function toggleApiKeyVisibility() {
+  const inp = document.getElementById('apikey-input');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apikey-input').value.trim();
+  if (!key) return;
+  localStorage.setItem('anthropicApiKey', key);
+  go('login');
+  renderLogin();
+}
+
+function bootApp() {
+  const key = getApiKey();
+  if (key) {
+    renderLogin();
+    go('login');
+  } else {
+    go('apikey');
+  }
+}
+
+function initApiKeyScreen() {
+  const key = getApiKey();
+  const skipBtn   = document.getElementById('apikey-skip-btn');
+  const saveBtn   = document.getElementById('apikey-save-btn');
+  const banner    = document.getElementById('apikey-saved-banner');
+  const inp       = document.getElementById('apikey-input');
+  if (key) {
+    banner.style.display = 'flex';
+    skipBtn.style.display = 'block';
+    inp.placeholder = 'sk-ant-... (שמור)';
+  } else {
+    banner.style.display = 'none';
+    skipBtn.style.display = 'none';
+  }
+  inp.value = '';
+  saveBtn.disabled = true;
+  saveBtn.style.opacity = '.4';
+}
 
 // USDA nutrient IDs
 const N_ENERGY  = 1008;
@@ -674,6 +797,7 @@ function go(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('on'));
   document.getElementById('s-' + id).classList.add('on');
   window.scrollTo(0, 0);
+  if (id === 'apikey') initApiKeyScreen();
 }
 
 /* ---- Gender ---- */
@@ -963,9 +1087,14 @@ async function analyze() {
 }`;
 
   try {
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      go('apikey');
+      return;
+    }
     const ar   = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
       body: JSON.stringify({
         model: ANTHROPIC_MODEL, max_tokens: 800,
         messages: [{ role: 'user', content: [
@@ -1086,7 +1215,7 @@ function saveMeal() {
 }
 
 /* ---- Boot ---- */
-renderLogin();
+bootApp();
 </script>
 </body>
 </html>
